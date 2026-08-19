@@ -1,0 +1,21 @@
+services:
+  recipe-postgres:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm
+    environment:
+      POSTGRES_DB: ${RECIPE_DB_NAME:-recipe_kb}
+      POSTGRES_USER: ${RECIPE_DB_USER:-recipe_kb}
+      POSTGRES_PASSWORD: ${RECIPE_DB_PASSWORD:?Set RECIPE_DB_PASSWORD}
+    ports:
+      - "${RECIPE_DB_PORT:-55432}:5432"
+    volumes:
+      - recipe-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  recipe-pgdata:

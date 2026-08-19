@@ -1,0 +1,49 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+!backend/.env.local.example
+
+# Local input images and runtime captures
+/74d52055e4947f8c.jpg
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE settings
+.idea/
+.vscode/
+.claude/
+
+# Build and coverage output
+build/
+dist/
+target/
+.runlogs/
+*.egg-info/
+.coverage
+htmlcov/
+node_modules/
+.npm-cache/
+*.tsbuildinfo
+*.log
+*.zip
+
+# Generated Recipe RAG artifacts may contain provider request identifiers.
+recipe_pipeline/output/
+recipe_pipeline/**/output/
+
+# Reusable local vectors and database state can be regenerated.
+recipe_pipeline/recipe_kb/.pixi/
+recipe_pipeline/recipe_kb/pixi.lock
+recipe_pipeline/recipe_kb/.postgres-data/

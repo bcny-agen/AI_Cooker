@@ -1,0 +1,2 @@
+# Optional runtime for the local Step 17H benchmark; unit tests use FakeEmbeddingProvider.
+sentence-transformers>=5.1,<6

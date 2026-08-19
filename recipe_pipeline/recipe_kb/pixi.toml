@@ -1,0 +1,8 @@
+[workspace]
+name = "recipe-kb-postgres"
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[dependencies]
+postgresql = "16.14.*"
+pgvector = "0.8.3.*"
