@@ -20,7 +20,7 @@ const emit = defineEmits<{
 <template>
   <div class="messages" aria-live="polite">
     <div v-if="loading" class="messages__state">
-      <span class="spinner" /> Loading conversation…
+      <span class="spinner" /> 正在加载对话…
     </div>
 
     <template v-else>
@@ -39,22 +39,22 @@ const emit = defineEmits<{
         </svg>
       </div>
       <div class="message-body">
-        <div class="message-name">{{ message.role === 'USER' ? 'You' : 'AI Cooker' }}</div>
+        <div class="message-name">{{ message.role === 'USER' ? '你' : 'AI Cooker' }}</div>
         <img
           v-if="message.imageId && imageUrls[message.imageId]"
           class="message-image"
           :src="imageUrls[message.imageId]"
-          alt="Ingredient photo attached to this message"
+          alt="这条消息附带的食材图片"
           @error="emit('imageError', message.imageId)"
         />
-        <div v-else-if="message.imageId" class="message-image-placeholder">Image preview unavailable</div>
+        <div v-else-if="message.imageId" class="message-image-placeholder">图片预览暂不可用</div>
         <div v-if="message.temporary && sending && streamStatus" class="agent-progress" role="status">
           <span class="agent-progress__dots" aria-hidden="true">
             <span class="agent-progress__dot" /><span class="agent-progress__dot" /><span class="agent-progress__dot" />
           </span>
           {{ streamStatus }}
         </div>
-        <div v-if="message.temporary && sending && !streamStatus && !message.content" class="thinking" role="status" aria-label="AI Cooker is thinking">
+        <div v-if="message.temporary && sending && !streamStatus && !message.content" class="thinking" role="status" aria-label="AI Cooker 正在思考">
           <span /><span /><span />
         </div>
         <AssistantMarkdown
@@ -78,11 +78,11 @@ const emit = defineEmits<{
           >
             <img
               :src="image.url"
-              alt="AI-generated preview of the selected dish"
+              alt="AI 生成的菜品预览图"
               loading="lazy"
               @error="emit('generatedImageError', image.imageId)"
             />
-            <figcaption>Generated dish preview</figcaption>
+            <figcaption>AI 生成的菜品预览</figcaption>
           </figure>
         </div>
         <div
@@ -90,13 +90,13 @@ const emit = defineEmits<{
           class="generated-image-error"
           role="alert"
         >
-          <span>Image generation failed.</span>
+          <span>图片生成失败。</span>
           <button
             v-if="message.imageRetryPrompt"
             type="button"
             :disabled="sending"
             @click="emit('retryImage', message.imageRetryPrompt)"
-          >Retry</button>
+          >重试</button>
         </div>
       </div>
       </article>

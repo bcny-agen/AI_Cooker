@@ -35,9 +35,9 @@ describe('MemorySettingsView', () => {
     await flushPromises()
 
     expect(memoriesApi.list).toHaveBeenCalledOnce()
-    expect(wrapper.text()).toContain('Dietary restrictions')
-    expect(wrapper.text()).toContain('coriander')
-    expect(wrapper.text()).toContain('avoid')
+    expect(wrapper.text()).toContain('饮食限制')
+    expect(wrapper.text()).toContain('香菜')
+    expect(wrapper.text()).toContain('避免')
     expect(wrapper.text()).not.toContain('confidence')
   })
 
@@ -63,7 +63,7 @@ describe('MemorySettingsView', () => {
       key: 'coriander',
       value: 'strongly avoid',
     })
-    expect(wrapper.text()).toContain('strongly avoid')
+    expect(wrapper.text()).toContain('坚决避免')
   })
 
   it('deletes a memory so it no longer appears', async () => {
@@ -77,7 +77,7 @@ describe('MemorySettingsView', () => {
     await flushPromises()
 
     expect(memoriesApi.remove).toHaveBeenCalledWith('memory-1')
-    expect(wrapper.text()).toContain('Nothing saved yet')
-    expect(wrapper.text()).not.toContain('coriander')
+    expect(wrapper.text()).toContain('暂时没有已保存的记忆')
+    expect(wrapper.text()).not.toContain('香菜')
   })
 })

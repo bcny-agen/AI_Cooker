@@ -118,7 +118,7 @@ async function shareAsPost(): Promise<void> {
     forumDraftStore.setDraft(draft)
     await router.push({ name: 'forum-new', query: { draft: 'generated' } })
   } catch (error) {
-    shareError.value = getApiErrorMessage(error, 'The forum draft could not be generated.')
+    shareError.value = getApiErrorMessage(error, '社区帖子草稿生成失败。')
   } finally {
     isGeneratingDraft.value = false
   }
@@ -194,19 +194,19 @@ onBeforeUnmount(chatStore.cancelStream)
 
     <section class="chat-main">
       <header class="chat-header">
-        <button class="icon-button menu-button" type="button" aria-label="Open conversations" @click="sidebarOpen = true">
+        <button class="icon-button menu-button" type="button" aria-label="打开对话列表" @click="sidebarOpen = true">
           <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
         <div>
-          <span class="chat-header__eyebrow">Your cooking assistant</span>
+          <span class="chat-header__eyebrow">你的智能烹饪助手</span>
           <h1>
             {{ chatStore.activeConversationId
-              ? chatStore.conversations.find((item) => item.id === chatStore.activeConversationId)?.title || 'Conversation'
-              : 'New conversation' }}
+              ? chatStore.conversations.find((item) => item.id === chatStore.activeConversationId)?.title || '对话'
+              : '新对话' }}
           </h1>
         </div>
         <label class="model-selector">
-          <span class="visually-hidden">Conversation model</span>
+          <span class="visually-hidden">对话模型</span>
           <select
             :value="chatStore.selectedModelId"
             :disabled="chatStore.isSending || chatStore.availableModels.length === 0"
@@ -217,7 +217,7 @@ onBeforeUnmount(chatStore.cancelStream)
               :key="model.id"
               :value="model.id"
               :disabled="!model.available"
-            >{{ model.displayName }}{{ model.available ? '' : ' (not configured)' }}</option>
+            >{{ model.displayName }}{{ model.available ? '' : '（未配置）' }}</option>
           </select>
         </label>
         <button
@@ -226,28 +226,28 @@ onBeforeUnmount(chatStore.cancelStream)
           type="button"
           :disabled="chatStore.isSending || isGeneratingDraft || !canGenerateForumDraft"
           :title="canGenerateForumDraft
-            ? 'Generate a forum draft from this conversation'
-            : 'Wait for a complete AI answer before sharing'"
+            ? '根据当前对话生成社区帖子草稿'
+            : '请等待 AI 完整回答后再分享'"
           @click="shareAsPost"
-        >{{ isGeneratingDraft ? 'Generating draft…' : 'Share as Post' }}</button>
-        <span class="status-pill"><i /> Online</span>
+        >{{ isGeneratingDraft ? '正在生成草稿…' : '分享为帖子' }}</button>
+        <span class="status-pill"><i /> 在线</span>
       </header>
 
       <div ref="messageScroller" class="chat-scroll">
         <div v-if="!chatStore.activeConversationId && chatStore.messages.length === 0" class="empty-chat">
           <div class="empty-chat__icon">🍲</div>
-          <span class="eyebrow">Let’s cook</span>
-          <h2>What ingredients are in your kitchen?</h2>
-          <p>Describe them below, or add a photo, and I’ll help turn them into a meal.</p>
+          <span class="eyebrow">一起做饭吧</span>
+          <h2>你的厨房里有哪些食材？</h2>
+          <p>在下方描述食材，或者添加照片，我会帮你把它们变成美味的一餐。</p>
           <div class="suggestion-grid">
-            <button type="button" @click="draft = 'I have eggs, tomatoes, and spinach. What can I make?'">
-              <span>🥚</span> Use what I have
+            <button type="button" @click="draft = '我有鸡蛋、番茄和菠菜，可以做什么？'">
+              <span>🥚</span> 用现有食材做菜
             </button>
-            <button type="button" @click="draft = 'Suggest a quick and healthy dinner for tonight.'">
-              <span>⏱️</span> Quick healthy dinner
+            <button type="button" @click="draft = '请推荐一道适合今晚的快手健康晚餐。'">
+              <span>⏱️</span> 快手健康晚餐
             </button>
-            <button type="button" @click="draft = 'Help me understand the nutrition of this recipe.'">
-              <span>🥗</span> Ask about nutrition
+            <button type="button" @click="draft = '请帮我分析这份菜谱的营养成分。'">
+              <span>🥗</span> 询问营养信息
             </button>
           </div>
         </div>
@@ -279,7 +279,7 @@ onBeforeUnmount(chatStore.cancelStream)
           :uploading="imageUpload.isUploading.value"
           :upload-progress="imageUpload.progress.value"
           :image-url="imageUpload.previewUrl.value"
-          :image-name="imageUpload.image.value?.originalFilename || 'Ingredient image'"
+          :image-name="imageUpload.image.value?.originalFilename || '食材图片'"
           :upload-error="imageUpload.errorMessage.value"
           :image-supported="chatStore.selectedModel?.supportsImages !== false"
           @send="send"

@@ -174,15 +174,29 @@ class SentenceTransformerEmbeddingProvider:
         dimensions: int | None = None,
         batch_size: int = 16,
         device: str = "cpu",
-        query_prefix: str = "query: ",
-        document_prefix: str = "passage: ",
+        query_prefix: str | None = None,
+        document_prefix: str | None = None,
     ):
         self._info = EmbeddingProviderInfo("sentence-transformers", model, dimensions, "local")
         self._batch_size = batch_size
         self._device = device
-        self._query_prefix = query_prefix
-        self._document_prefix = document_prefix
+        default_query, default_document = self._default_prefixes(model)
+        self._query_prefix = default_query if query_prefix is None else query_prefix
+        self._document_prefix = (
+            default_document if document_prefix is None else document_prefix
+        )
         self._model_instance = None
+
+    @staticmethod
+    def _default_prefixes(model: str) -> tuple[str, str]:
+        folded = model.casefold()
+        if "bge-" in folded and "-zh" in folded:
+            return "为这个句子生成表示以用于检索相关文章：", ""
+        if "bge-" in folded:
+            return "Represent this sentence for searching relevant passages: ", ""
+        # Preserve the existing E5 contract for the frozen production model
+        # and custom providers that previously relied on these defaults.
+        return "query: ", "passage: "
 
     @property
     def info(self) -> EmbeddingProviderInfo:

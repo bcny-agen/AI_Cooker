@@ -38,7 +38,7 @@ export function useImageUpload() {
       return image.value
     } catch (error) {
       if (sequence !== requestSequence) return null
-      errorMessage.value = getApiErrorMessage(error, 'The image could not be uploaded.')
+      errorMessage.value = getApiErrorMessage(error, '图片上传失败。')
       return null
     } finally {
       if (sequence === requestSequence) isUploading.value = false

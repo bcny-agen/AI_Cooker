@@ -103,7 +103,7 @@ describe('conversation forum draft flow', () => {
 
     wrapper.get<HTMLButtonElement>('.share-post-button').element.click()
     await flushPromises()
-    expect(wrapper.get('.share-post-button').text()).toContain('Generating draft')
+    expect(wrapper.get('.share-post-button').text()).toContain('正在生成草稿')
     expect(wrapper.get<HTMLButtonElement>('.share-post-button').element.disabled).toBe(true)
 
     resolveDraft(generatedDraft)
@@ -123,7 +123,7 @@ describe('conversation forum draft flow', () => {
     wrapper.get<HTMLButtonElement>('.share-post-button').element.click()
     await flushPromises()
 
-    expect(wrapper.get('.inline-error').text()).toContain('model failed')
+    expect(wrapper.get('.inline-error').text()).toContain('社区帖子草稿生成失败')
     expect(router.currentRoute.value.path).toBe('/chat')
     expect(forumApi.create).not.toHaveBeenCalled()
   })
@@ -142,7 +142,7 @@ describe('conversation forum draft flow', () => {
     const shareButton = wrapper.get<HTMLButtonElement>('.share-post-button')
 
     expect(shareButton.element.disabled).toBe(true)
-    expect(shareButton.attributes('title')).toContain('complete AI answer')
+    expect(shareButton.attributes('title')).toContain('AI 完整回答')
     await shareButton.trigger('click')
     expect(forumApi.generateDraft).not.toHaveBeenCalled()
   })

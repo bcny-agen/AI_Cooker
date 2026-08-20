@@ -34,9 +34,9 @@ const suggestedPreviewUrl = ref('')
 const suggestedImageNotice = ref('')
 let suggestedRefreshAttempted = false
 const selectedImageSourceLabel = computed(() => {
-  if (imageUpload.image.value) return 'Your uploaded image'
-  if (existingImageType.value === 'AI_GENERATED') return 'AI Generated'
-  if (existingImageType.value === 'USER_UPLOAD') return 'Your uploaded image'
+  if (imageUpload.image.value) return '你上传的图片'
+  if (existingImageType.value === 'AI_GENERATED') return 'AI 生成图片'
+  if (existingImageType.value === 'USER_UPLOAD') return '你上传的图片'
   return ''
 })
 
@@ -55,7 +55,7 @@ async function initialize(): Promise<void> {
     } else {
       forumDraftStore.clear()
       if (route.query.draft === 'generated') {
-        errorMessage.value = 'This generated draft is no longer available. Generate it again from the conversation.'
+        errorMessage.value = '这份生成的草稿已失效，请返回对话重新生成。'
       }
     }
     return
@@ -65,7 +65,7 @@ async function initialize(): Promise<void> {
     const post = await forumApi.get(postId.value)
     if (!post.isOwner) {
       canEdit.value = false
-      errorMessage.value = 'Only the author can edit this post.'
+      errorMessage.value = '只有作者本人可以编辑这篇帖子。'
       return
     }
     title.value = post.title
@@ -74,7 +74,7 @@ async function initialize(): Promise<void> {
     existingImageType.value = post.imageType
   } catch (error) {
     canEdit.value = false
-    errorMessage.value = getApiErrorMessage(error, 'This forum post could not be loaded.')
+    errorMessage.value = getApiErrorMessage(error, '这篇社区帖子加载失败。')
   } finally {
     loading.value = false
   }
@@ -92,7 +92,7 @@ async function loadSuggestedPreview(): Promise<void> {
     existingImageId.value = null
     existingImageType.value = null
     suggestedPreviewUrl.value = ''
-    suggestedImageNotice.value = 'The suggested conversation image is no longer available.'
+    suggestedImageNotice.value = '对话中建议使用的图片已失效。'
   }
 }
 
@@ -101,7 +101,7 @@ async function refreshSuggestedPreview(): Promise<void> {
     existingImageId.value = null
     existingImageType.value = null
     suggestedPreviewUrl.value = ''
-    suggestedImageNotice.value = 'The suggested conversation image could not be loaded.'
+    suggestedImageNotice.value = '无法加载对话中建议使用的图片。'
     return
   }
   suggestedRefreshAttempted = true
@@ -130,7 +130,7 @@ function removeImage(): void {
 
 async function submit(): Promise<void> {
   if (!title.value.trim() || !content.value.trim() || submitting.value) {
-    errorMessage.value = 'Add both a title and a description.'
+    errorMessage.value = '请填写菜品标题和烹饪分享。'
     return
   }
   submitting.value = true
@@ -157,7 +157,7 @@ async function submit(): Promise<void> {
     forumDraftStore.clear()
     await router.replace(`/forum/${saved.id}`)
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'The forum post could not be saved.')
+    errorMessage.value = getApiErrorMessage(error, '社区帖子保存失败。')
   } finally {
     submitting.value = false
   }
@@ -170,47 +170,47 @@ onMounted(initialize)
   <main class="forum-shell">
     <ForumHeader />
     <section class="forum-editor-page">
-      <RouterLink class="back-link" :to="postId ? `/forum/${postId}` : '/forum'">← Cancel</RouterLink>
+      <RouterLink class="back-link" :to="postId ? `/forum/${postId}` : '/forum'">← 取消</RouterLink>
       <div class="forum-editor-heading">
-        <span class="eyebrow">{{ editing ? 'Update your dish' : 'Bring something to the table' }}</span>
-        <h1>{{ editing ? 'Edit forum post' : 'Share a cooked dish' }}</h1>
-        <p>Tell the community what you made. Plain text keeps every post safe and easy to read.</p>
+        <span class="eyebrow">{{ editing ? '更新你的菜品' : '端上你的拿手菜' }}</span>
+        <h1>{{ editing ? '编辑社区帖子' : '分享烹饪成果' }}</h1>
+        <p>告诉大家你做了什么。使用纯文本，让每篇帖子都安全、清晰、易读。</p>
       </div>
 
       <div v-if="generatedDraft" class="generated-draft-notice" role="status">
-        <strong>AI-generated draft</strong>
-        <span>Review and edit everything before publishing<span v-if="draftDishName"> · Suggested dish: {{ draftDishName }}</span>.</span>
+        <strong>AI 生成的草稿</strong>
+        <span>发布前请检查并编辑全部内容<span v-if="draftDishName"> · 建议菜品：{{ draftDishName }}</span>。</span>
       </div>
 
-      <div v-if="loading" class="forum-state"><span class="spinner" /> Loading post…</div>
+      <div v-if="loading" class="forum-state"><span class="spinner" /> 正在加载帖子…</div>
       <div v-else-if="!canEdit" class="notice notice--error" role="alert">{{ errorMessage }}</div>
       <form v-else class="forum-editor" @submit.prevent="submit">
         <div v-if="errorMessage" class="notice notice--error" role="alert">{{ errorMessage }}</div>
         <label class="field">
-          <span>Dish title</span>
-          <input v-model="title" maxlength="160" required placeholder="My tomato and egg dish">
+          <span>菜品标题</span>
+          <input v-model="title" maxlength="160" required placeholder="例如：家常番茄炒蛋">
           <small>{{ title.length }}/160</small>
         </label>
         <label class="field">
-          <span>Your cooking story</span>
+          <span>烹饪分享</span>
           <textarea
             v-model="content"
             maxlength="20000"
             required
             rows="10"
-            placeholder="What did you make, and how did it turn out?"
+            placeholder="你做了什么？味道和成品怎么样？"
           />
           <small>{{ content.length }}/20000</small>
         </label>
 
         <div class="forum-editor__image">
           <div>
-            <strong>Dish image</strong>
-            <p>Optional · JPEG, PNG, or WebP</p>
+            <strong>菜品图片</strong>
+            <p>选填 · 支持 JPEG、PNG 或 WebP</p>
           </div>
           <label class="secondary-button file-button">
             <input type="file" accept="image/jpeg,image/png,image/webp" :disabled="imageUpload.isUploading.value" @change="selectImage">
-            {{ imageUpload.isUploading.value ? `Uploading ${imageUpload.progress.value}%` : 'Choose image' }}
+            {{ imageUpload.isUploading.value ? `正在上传 ${imageUpload.progress.value}%` : '选择图片' }}
           </label>
         </div>
         <div v-if="imageUpload.errorMessage.value" class="notice notice--error">{{ imageUpload.errorMessage.value }}</div>
@@ -220,31 +220,31 @@ onMounted(initialize)
           class="forum-editor__image-source"
           role="status"
         >
-          <strong>Selected image</strong>
-          <span>{{ existingImageType === 'AI_GENERATED' && !imageUpload.image.value ? 'AI Generated Dish Image' : 'Your uploaded image' }}</span>
-          <small>Source: {{ selectedImageSourceLabel }}</small>
+          <strong>已选择的图片</strong>
+          <span>{{ existingImageType === 'AI_GENERATED' && !imageUpload.image.value ? 'AI 生成的菜品图片' : '你上传的图片' }}</span>
+          <small>来源：{{ selectedImageSourceLabel }}</small>
         </div>
         <div v-if="imageUpload.previewUrl.value || existingImageId" class="forum-editor__preview">
-          <img v-if="imageUpload.previewUrl.value" :src="imageUpload.previewUrl.value" alt="New dish preview">
+          <img v-if="imageUpload.previewUrl.value" :src="imageUpload.previewUrl.value" alt="新菜品预览图">
           <ForumImage
             v-else-if="existingImageId && postId"
             :post-id="postId"
             :image-id="existingImageId"
-            alt="Current dish image"
+            alt="当前菜品图片"
           />
           <img
             v-else-if="existingImageId && suggestedPreviewUrl"
             :src="suggestedPreviewUrl"
-            :alt="existingImageType === 'AI_GENERATED' ? 'AI generated dish image' : 'Suggested uploaded image'"
+            :alt="existingImageType === 'AI_GENERATED' ? 'AI 生成的菜品图片' : '建议使用的上传图片'"
             @error="refreshSuggestedPreview"
           >
-          <button class="text-button" type="button" @click="removeImage">Remove image</button>
+          <button class="text-button" type="button" @click="removeImage">移除图片</button>
         </div>
 
         <div class="forum-editor__actions">
-          <RouterLink class="secondary-button" :to="postId ? `/forum/${postId}` : '/forum'">Cancel</RouterLink>
+          <RouterLink class="secondary-button" :to="postId ? `/forum/${postId}` : '/forum'">取消</RouterLink>
           <button class="primary-link" type="submit" :disabled="submitting || imageUpload.isUploading.value">
-            {{ submitting ? 'Saving…' : editing ? 'Save changes' : 'Publish post' }}
+            {{ submitting ? '正在保存…' : editing ? '保存修改' : '发布帖子' }}
           </button>
         </div>
       </form>

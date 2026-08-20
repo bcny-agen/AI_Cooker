@@ -19,15 +19,15 @@ const usernameValid = computed(() => /^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$/.test(us
 
 async function submit(): Promise<void> {
   if (!usernameValid.value) {
-    errorMessage.value = 'Use 3–50 letters, numbers, dots, hyphens, or underscores.'
+    errorMessage.value = '用户名需为 3–50 位，只能包含英文字母、数字、点、连字符或下划线。'
     return
   }
   if (password.value.length < 8 || password.value.length > 64) {
-    errorMessage.value = 'Password must contain 8–64 characters.'
+    errorMessage.value = '密码长度需为 8–64 个字符。'
     return
   }
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Passwords do not match.'
+    errorMessage.value = '两次输入的密码不一致。'
     return
   }
 
@@ -37,7 +37,7 @@ async function submit(): Promise<void> {
     await authStore.register({ username: username.value, password: password.value })
     await router.replace({ name: 'login', query: { registered: 'true' } })
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Your account could not be created.')
+    errorMessage.value = getApiErrorMessage(error, '账号创建失败，请稍后重试。')
   } finally {
     isSubmitting.value = false
   }
@@ -49,8 +49,8 @@ async function submit(): Promise<void> {
     <section class="auth-intro">
       <div>
         <AppLogo />
-        <h1>Your personal recipe notebook, powered by your ingredients.</h1>
-        <p>Create an account to keep every cooking conversation organized and private.</p>
+        <h1>根据手边食材，建立你的专属菜谱笔记。</h1>
+        <p>创建账号，安全整理每一次烹饪对话与灵感。</p>
       </div>
       <div class="ingredient-orbit" aria-hidden="true">
         <span>🥦</span><span>🧅</span><span>🍋</span><span>🍄</span>
@@ -61,15 +61,15 @@ async function submit(): Promise<void> {
     <section class="auth-panel">
       <form class="auth-card" @submit.prevent="submit">
         <div class="auth-card__heading">
-          <span class="eyebrow">Get started</span>
-          <h2>Create your account</h2>
-          <p>Save recipes and pick up where you left off.</p>
+          <span class="eyebrow">开始使用</span>
+          <h2>创建账号</h2>
+          <p>保存菜谱，随时接着上次的对话继续。</p>
         </div>
 
         <div v-if="errorMessage" class="notice notice--error" role="alert">{{ errorMessage }}</div>
 
         <label class="field">
-          <span>Username</span>
+          <span>用户名</span>
           <input
             v-model="username"
             name="username"
@@ -77,12 +77,12 @@ async function submit(): Promise<void> {
             minlength="3"
             maxlength="50"
             required
-            placeholder="your_username"
+            placeholder="请输入用户名"
           />
-          <small>Letters, numbers, dots, hyphens, and underscores.</small>
+          <small>支持英文字母、数字、点、连字符和下划线。</small>
         </label>
         <label class="field">
-          <span>Password</span>
+          <span>密码</span>
           <input
             v-model="password"
             name="password"
@@ -91,27 +91,27 @@ async function submit(): Promise<void> {
             minlength="8"
             maxlength="64"
             required
-            placeholder="At least 8 characters"
+            placeholder="至少 8 个字符"
           />
         </label>
         <label class="field">
-          <span>Confirm password</span>
+          <span>确认密码</span>
           <input
             v-model="confirmPassword"
             name="confirmPassword"
             type="password"
             autocomplete="new-password"
             required
-            placeholder="Repeat your password"
+            placeholder="请再次输入密码"
           />
         </label>
 
         <button class="primary-button" type="submit" :disabled="isSubmitting">
           <span v-if="isSubmitting" class="spinner spinner--light" />
-          {{ isSubmitting ? 'Creating account…' : 'Create account' }}
+          {{ isSubmitting ? '正在创建…' : '创建账号' }}
         </button>
 
-        <p class="auth-switch">Already have an account? <RouterLink to="/login">Sign in</RouterLink></p>
+        <p class="auth-switch">已有账号？<RouterLink to="/login">立即登录</RouterLink></p>
       </form>
     </section>
   </main>

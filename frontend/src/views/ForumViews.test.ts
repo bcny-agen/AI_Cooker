@@ -124,7 +124,7 @@ describe('forum views', () => {
       size: 42,
     })
     const { wrapper, router } = await mountAt('/forum/new', ForumEditorView)
-    await wrapper.get('input[placeholder="My tomato and egg dish"]').setValue('My dinner')
+    await wrapper.get('input[maxlength="160"]').setValue('My dinner')
     await wrapper.get('textarea').setValue('It turned out well.')
     const file = new File([new Uint8Array([0xff, 0xd8, 0xff])], 'dinner.jpg', { type: 'image/jpeg' })
     const input = wrapper.get<HTMLInputElement>('input[type="file"]')
@@ -143,7 +143,7 @@ describe('forum views', () => {
       imageType: 'USER_UPLOAD',
     })
     expect(wrapper.get('.forum-editor__image-source').text())
-      .toContain('Source: Your uploaded image')
+      .toContain('来源：你上传的图片')
     expect(router.currentRoute.value.path).toBe('/forum/post-1')
   })
 
@@ -152,9 +152,9 @@ describe('forum views', () => {
     vi.mocked(forumApi.update).mockResolvedValue(updated)
     const { wrapper, router } = await mountAt('/forum/post-1/edit', ForumEditorView)
 
-    expect(wrapper.get<HTMLInputElement>('input[placeholder="My tomato and egg dish"]').element.value)
+    expect(wrapper.get<HTMLInputElement>('input[maxlength="160"]').element.value)
       .toBe('Tomato and egg')
-    await wrapper.get('input[placeholder="My tomato and egg dish"]').setValue(updated.title)
+    await wrapper.get('input[maxlength="160"]').setValue(updated.title)
     await wrapper.get('form').trigger('submit')
     await flushPromises()
 
@@ -171,7 +171,7 @@ describe('forum views', () => {
     vi.mocked(forumApi.image).mockRejectedValue(new Error('missing object'))
     const { wrapper } = await mountAt('/forum', ForumFeedView)
 
-    expect(wrapper.get('.forum-image__state').text()).toBe('Image unavailable')
+    expect(wrapper.get('.forum-image__state').text()).toBe('图片暂不可用')
     expect(wrapper.get('.forum-card h2').text()).toBe('Tomato and egg')
   })
 
@@ -200,17 +200,17 @@ describe('forum views', () => {
     const wrapper = mount(ForumEditorView, { global: { plugins: [pinia, router] } })
     await flushPromises()
 
-    expect(wrapper.get('.generated-draft-notice').text()).toContain('AI-generated draft')
-    expect(wrapper.get<HTMLInputElement>('input[placeholder="My tomato and egg dish"]').element.value)
+    expect(wrapper.get('.generated-draft-notice').text()).toContain('AI 生成的草稿')
+    expect(wrapper.get<HTMLInputElement>('input[maxlength="160"]').element.value)
       .toBe('Generated tomato dish')
     expect(wrapper.get<HTMLTextAreaElement>('textarea').element.value)
       .toBe('Generated but fully editable content.')
-    expect(wrapper.get('img[alt="AI generated dish image"]').attributes('src'))
+    expect(wrapper.get('img[alt="AI 生成的菜品图片"]').attributes('src'))
       .toBe('https://signed.example/suggested')
     expect(wrapper.get('.forum-editor__image-source').text())
-      .toContain('Source: AI Generated')
+      .toContain('来源：AI 生成图片')
 
-    await wrapper.get('input[placeholder="My tomato and egg dish"]').setValue('User edited title')
+    await wrapper.get('input[maxlength="160"]').setValue('User edited title')
     await wrapper.get('textarea').setValue('User edited content.')
     await wrapper.get('form').trigger('submit')
     await flushPromises()

@@ -17,7 +17,7 @@ const errorMessage = ref('')
 
 async function submit(): Promise<void> {
   if (!username.value.trim() || !password.value) {
-    errorMessage.value = 'Enter your username and password.'
+    errorMessage.value = '请输入用户名和密码。'
     return
   }
   isSubmitting.value = true
@@ -30,7 +30,7 @@ async function submit(): Promise<void> {
       : '/chat'
     await router.replace(redirect)
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Login failed. Check your credentials.')
+    errorMessage.value = getApiErrorMessage(error, '登录失败，请检查用户名和密码。')
   } finally {
     isSubmitting.value = false
   }
@@ -42,9 +42,9 @@ async function submit(): Promise<void> {
     <section class="auth-intro">
       <div>
         <AppLogo />
-        <h1>Cook something wonderful with what you already have.</h1>
+        <h1>用手边已有的食材，做出令人惊喜的一餐。</h1>
         <p>
-          Share your ingredients, add a photo, and get practical recipes tailored to your kitchen.
+          告诉我们你有哪些食材，也可以上传照片，获取适合你家厨房的实用菜谱。
         </p>
       </div>
       <div class="ingredient-orbit" aria-hidden="true">
@@ -56,32 +56,32 @@ async function submit(): Promise<void> {
     <section class="auth-panel">
       <form class="auth-card" @submit.prevent="submit">
         <div class="auth-card__heading">
-          <span class="eyebrow">Welcome back</span>
-          <h2>Sign in to your kitchen</h2>
-          <p>Continue your recipe conversations.</p>
+          <span class="eyebrow">欢迎回来</span>
+          <h2>登录你的厨房</h2>
+          <p>继续之前的菜谱对话。</p>
         </div>
 
         <div v-if="route.query.registered" class="notice notice--success">
-          Account created. You can sign in now.
+          账号已创建，现在可以登录了。
         </div>
         <div v-if="route.query.reason === 'expired'" class="notice">
-          Your session expired. Please sign in again.
+          登录状态已过期，请重新登录。
         </div>
         <div v-if="errorMessage" class="notice notice--error" role="alert">{{ errorMessage }}</div>
 
         <label class="field">
-          <span>Username</span>
+          <span>用户名</span>
           <input
             v-model="username"
             name="username"
             autocomplete="username"
             maxlength="50"
             required
-            placeholder="your_username"
+            placeholder="请输入用户名"
           />
         </label>
         <label class="field">
-          <span>Password</span>
+          <span>密码</span>
           <input
             v-model="password"
             name="password"
@@ -95,10 +95,10 @@ async function submit(): Promise<void> {
 
         <button class="primary-button" type="submit" :disabled="isSubmitting">
           <span v-if="isSubmitting" class="spinner spinner--light" />
-          {{ isSubmitting ? 'Signing in…' : 'Sign in' }}
+          {{ isSubmitting ? '正在登录…' : '登录' }}
         </button>
 
-        <p class="auth-switch">New to AI Cooker? <RouterLink to="/register">Create an account</RouterLink></p>
+        <p class="auth-switch">第一次使用 AI Cooker？<RouterLink to="/register">创建账号</RouterLink></p>
       </form>
     </section>
   </main>

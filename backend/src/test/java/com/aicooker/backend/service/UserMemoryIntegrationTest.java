@@ -3,6 +3,7 @@ package com.aicooker.backend.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import com.aicooker.backend.client.AiCookerClient;
 import com.aicooker.backend.dto.UpdateMemoryRequest;
 import com.aicooker.backend.entity.MemoryType;
 import com.aicooker.backend.entity.UserEntity;
+import com.aicooker.backend.entity.UserMemoryEntity;
 import com.aicooker.backend.exception.MemoryNotFoundException;
 import com.aicooker.backend.repository.UserMemoryRepository;
 import com.aicooker.backend.repository.UserRepository;
@@ -53,6 +55,65 @@ class UserMemoryIntegrationTest {
                     assertThat(memory.getMemoryKey()).isEqualTo("oil");
                     assertThat(memory.getConfidence()).isEqualByComparingTo("0.9700");
                 });
+    }
+
+    @Test
+    void multilingualAndPluralFoodKeysAreCanonicalizedBeforeDeduplication() {
+        UserEntity user = createUser();
+        UUID conversation = createConversation(user, "我对花生过敏。");
+
+        memoryService.applyExtractedMemories(user.getId(), conversation, List.of(
+                upsert(MemoryType.DIETARY_RESTRICTION, "peanuts", "allergy", 0.94)
+        ));
+        memoryService.applyExtractedMemories(user.getId(), conversation, List.of(
+                upsert(MemoryType.DIETARY_RESTRICTION, "花生", "allergy", 0.99)
+        ));
+
+        assertThat(memoryRepository.findByUser_IdAndActiveTrue(user.getId()))
+                .hasSize(1)
+                .first()
+                .satisfies(memory -> {
+                    assertThat(memory.getMemoryKey()).isEqualTo("peanut");
+                    assertThat(memory.getConfidence()).isEqualByComparingTo("0.9900");
+                });
+    }
+
+    @Test
+    void legacyAliasRowsAreDeduplicatedAtTheReadBoundary() {
+        UserEntity user = createUser();
+        UUID conversation = createConversation(user, "我对花生过敏。");
+        Instant now = Instant.now();
+        memoryRepository.saveAll(List.of(
+                new UserMemoryEntity(
+                        UUID.randomUUID(),
+                        user,
+                        MemoryType.DIETARY_RESTRICTION,
+                        "peanut",
+                        "allergy",
+                        new BigDecimal("0.9900"),
+                        conversation,
+                        now
+                ),
+                new UserMemoryEntity(
+                        UUID.randomUUID(),
+                        user,
+                        MemoryType.DIETARY_RESTRICTION,
+                        "peanuts",
+                        "allergy",
+                        new BigDecimal("0.9400"),
+                        conversation,
+                        now.minusSeconds(1)
+                )
+        ));
+
+        assertThat(memoryService.list(user.getId()))
+                .singleElement()
+                .satisfies(memory -> {
+                    assertThat(memory.key()).isEqualTo("peanut");
+                    assertThat(memory.value()).isEqualTo("allergy");
+                });
+        assertThat(memoryService.contextForAgent(user.getId()))
+                .containsExactly("Dietary restriction — peanut: allergy");
     }
 
     @Test

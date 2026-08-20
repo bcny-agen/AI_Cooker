@@ -366,6 +366,59 @@ class CookerAgentServiceTests(unittest.TestCase):
         self.assertEqual("".join(event.content or "" for event in remaining), "streamed answer.")
         self.assertEqual(remaining[-1].type, "done")
 
+    def test_non_recipe_preference_chat_is_not_blocked_by_recipe_validator(self) -> None:
+        final = AIMessage(
+            id="final",
+            content="我理解了，我们可以继续聊蒸锅和空气炸锅这类设备的取舍。",
+        )
+        agent = ScriptedStreamingAgent([
+            (
+                "messages",
+                (
+                    AIMessageChunk(
+                        id="final",
+                        content=final.text,
+                        chunk_position="last",
+                    ),
+                    {"langgraph_node": "model"},
+                ),
+            ),
+            ("updates", {"model": {"messages": [final]}}),
+        ], [final])
+
+        output = list(CookerAgentService(agent).stream_chat(
+            "preference-chat",
+            "我平时只有电饭锅和炒锅，我们只是聊聊做饭习惯。",
+        ))
+
+        self.assertEqual(output[-1].type, "done")
+
+    def test_recipe_response_still_rejects_unavailable_equipment(self) -> None:
+        final = AIMessage(
+            id="final",
+            content="推荐用蒸锅或空气炸锅来做这顿晚饭。",
+        )
+        agent = ScriptedStreamingAgent([
+            (
+                "messages",
+                (
+                    AIMessageChunk(
+                        id="final",
+                        content=final.text,
+                        chunk_position="last",
+                    ),
+                    {"langgraph_node": "model"},
+                ),
+            ),
+            ("updates", {"model": {"messages": [final]}}),
+        ], [final])
+
+        with self.assertRaises(AgentResponseError):
+            list(CookerAgentService(agent).stream_chat(
+                "recipe-constraint",
+                "我只有电饭锅和炒锅，请推荐一个晚饭食谱。",
+            ))
+
     def test_recipe_to_tavily_multi_tool_chain_has_one_canonical_answer(self) -> None:
         final = AIMessage(id="final", content="Fallback-grounded final answer.")
         events = []

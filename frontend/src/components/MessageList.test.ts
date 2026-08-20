@@ -29,7 +29,7 @@ describe('MessageList generated dish images', () => {
 
     expect(wrapper.get('.generated-dish-image img').attributes('src'))
       .toBe('https://signed.example/generated')
-    expect(wrapper.text()).toContain('Generated dish preview')
+    expect(wrapper.text()).toContain('AI 生成的菜品预览')
   })
 
   it('emits retry with the original explicit image request', async () => {

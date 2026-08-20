@@ -5,8 +5,10 @@ import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,12 @@ public class UserMemoryService {
     private static final double MIN_AUTOMATIC_CONFIDENCE = 0.80;
     private static final double SAFETY_CHANGE_CONFIDENCE = 0.98;
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+    private static final Map<String, String> MEMORY_KEY_ALIASES = Map.ofEntries(
+            Map.entry("peanuts", "peanut"),
+            Map.entry("peanut allergy", "peanut"),
+            Map.entry("花生", "peanut"),
+            Map.entry("花生过敏", "peanut")
+    );
 
     private final UserMemoryRepository memoryRepository;
     private final UserRepository userRepository;
@@ -181,13 +189,46 @@ public class UserMemoryService {
     }
 
     private List<UserMemoryEntity> activeMemories(UUID userId) {
-        return memoryRepository.findByUser_IdAndActiveTrue(userId).stream()
+        Map<String, UserMemoryEntity> canonicalMemories = new LinkedHashMap<>();
+        memoryRepository.findByUser_IdAndActiveTrue(userId).forEach(memory ->
+                canonicalMemories.merge(
+                        normalizeKey(memory.getMemoryKey()),
+                        memory,
+                        UserMemoryService::preferredMemory
+                )
+        );
+        return canonicalMemories.values().stream()
                 .sorted(Comparator
                         .comparingInt((UserMemoryEntity item) -> priority(
                                 item.getMemoryType()
                         ))
-                        .thenComparing(UserMemoryEntity::getMemoryKey))
+                        .thenComparing(item -> normalizeKey(
+                                item.getMemoryKey()
+                        )))
                 .toList();
+    }
+
+    private static UserMemoryEntity preferredMemory(
+            UserMemoryEntity first,
+            UserMemoryEntity second
+    ) {
+        return Comparator
+                .comparingInt((UserMemoryEntity item) -> priority(
+                        item.getMemoryType()
+                ))
+                .thenComparingInt(item -> item.getMemoryKey().equals(
+                        normalizeKey(item.getMemoryKey())
+                ) ? 0 : 1)
+                .thenComparing(
+                        UserMemoryEntity::getConfidence,
+                        Comparator.reverseOrder()
+                )
+                .thenComparing(
+                        UserMemoryEntity::getUpdatedAt,
+                        Comparator.reverseOrder()
+                )
+                .thenComparing(UserMemoryEntity::getId)
+                .compare(first, second) <= 0 ? first : second;
     }
 
     private static int priority(MemoryType type) {
@@ -214,7 +255,7 @@ public class UserMemoryService {
         if (normalized.isBlank() || normalized.length() > 80) {
             throw new MemoryValidationException("Memory key is invalid.");
         }
-        return normalized;
+        return MEMORY_KEY_ALIASES.getOrDefault(normalized, normalized);
     }
 
     private static String normalizeValue(String value) {
@@ -237,7 +278,7 @@ public class UserMemoryService {
             case HOUSEHOLD_CONTEXT -> "Cooking habit";
             case NUTRITION_GOAL -> "Nutrition goal";
         };
-        return category + " — " + memory.getMemoryKey() + ": "
+        return category + " — " + normalizeKey(memory.getMemoryKey()) + ": "
                 + memory.getMemoryValue();
     }
 
@@ -245,7 +286,7 @@ public class UserMemoryService {
         return new MemoryResponse(
                 memory.getId(),
                 memory.getMemoryType(),
-                memory.getMemoryKey(),
+                normalizeKey(memory.getMemoryKey()),
                 memory.getMemoryValue(),
                 memory.getCreatedAt(),
                 memory.getUpdatedAt()

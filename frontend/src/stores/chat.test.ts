@@ -163,10 +163,10 @@ describe('chat store', () => {
     expect(chatApi.stream).toHaveBeenCalledOnce()
 
     emit?.({ type: 'status', conversationId: 'generated-id', stage: 'summarizing_context' })
-    expect(store.streamStatus).toBe('Compressing older conversation context…')
+    expect(store.streamStatus).toBe('正在整理较早的对话内容…')
     emit?.({ type: 'status', conversationId: 'generated-id', stage: 'searching_recipes', message: 'Searching recipes…' })
     emit?.({ type: 'token', conversationId: 'generated-id', content: 'First ' })
-    expect(store.streamStatus).toBe('Searching recipes…')
+    expect(store.streamStatus).toBe('正在搜索菜谱…')
     expect(store.messages.at(-1)?.content).toBe('First ')
 
     emit?.({ type: 'token', conversationId: 'generated-id', content: 'answer.' })
@@ -187,7 +187,7 @@ describe('chat store', () => {
     const request = store.sendMessage('Generate an image of the second dish')
 
     emit?.({ type: 'status', conversationId: 'image-thread', stage: 'generating_image' })
-    expect(store.streamStatus).toBe('Generating dish image…')
+    expect(store.streamStatus).toBe('正在生成菜品图片…')
     emit?.({ type: 'token', conversationId: 'image-thread', content: 'Here it is.' })
     emit?.({
       type: 'generated_image',
@@ -243,7 +243,7 @@ describe('chat store', () => {
 
     expect(await store.sendMessage('Question')).toBe(false)
     expect(store.messages.some((item) => item.role === 'ASSISTANT')).toBe(false)
-    expect(store.errorMessage).toBe('safe upstream error')
+    expect(store.errorMessage).toBe('AI Cooker 暂时无法回答，请重试。')
   })
 
   it('selects DeepSeek for a new conversation and exposes its image limitation', async () => {
@@ -254,7 +254,7 @@ describe('chat store', () => {
     expect(await store.selectModel('DEEPSEEK_V4_PRO')).toBe(true)
     expect(store.selectedModelId).toBe('DEEPSEEK_V4_PRO')
     expect(store.selectedModel?.supportsImages).toBe(false)
-    expect(store.modelNotice).toContain('text chat only')
+    expect(store.modelNotice).toContain('仅支持文字对话')
     await store.sendMessage('I have tofu')
     expect(vi.mocked(chatApi.stream).mock.calls[0]?.[0].modelId).toBe('DEEPSEEK_V4_PRO')
     expect(conversationsApi.changeModel).not.toHaveBeenCalled()

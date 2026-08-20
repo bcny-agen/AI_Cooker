@@ -98,7 +98,7 @@ describe('historical image previews', () => {
     await store.selectConversation('conversation-1')
     await flushPromises()
 
-    expect(wrapper.get('.message-image-placeholder').text()).toContain('unavailable')
+    expect(wrapper.get('.message-image-placeholder').text()).toContain('暂不可用')
     expect(wrapper.get('.message-content').text()).toContain('Second line')
   })
 
@@ -116,7 +116,7 @@ describe('historical image previews', () => {
     await selector.setValue('DEEPSEEK_V4_PRO')
     await flushPromises()
 
-    expect(wrapper.get('.model-notice').text()).toContain('text chat only')
+    expect(wrapper.get('.model-notice').text()).toContain('仅支持文字对话')
     expect(wrapper.get<HTMLButtonElement>('.composer__attach').element.disabled).toBe(true)
   })
 })

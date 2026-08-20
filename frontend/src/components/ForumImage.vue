@@ -55,10 +55,10 @@ watch(
 
 <template>
   <div class="forum-image" :class="{ 'forum-image--failed': failed }">
-    <div v-if="loading && !url" class="forum-image__state" aria-label="Loading image">
+    <div v-if="loading && !url" class="forum-image__state" aria-label="正在加载图片">
       <span class="spinner" />
     </div>
     <img v-else-if="url && !failed" :src="url" :alt="alt" @error="handleError">
-    <div v-else class="forum-image__state">Image unavailable</div>
+    <div v-else class="forum-image__state">图片暂不可用</div>
   </div>
 </template>

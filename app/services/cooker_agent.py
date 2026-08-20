@@ -637,7 +637,11 @@ class CookerAgentService:
         final_constraints = extract_constraints_for_answer(
             final_state_messages, user_memories
         )
-        unsafe_terms = unsafe_constraint_mentions(final_text, final_constraints)
+        unsafe_terms = (
+            unsafe_constraint_mentions(final_text, final_constraints)
+            if final_constraints.should_search_recipe
+            else ()
+        )
         if unsafe_terms:
             logger.warning(
                 "cooking_agent_constraint_violation term_count=%s",

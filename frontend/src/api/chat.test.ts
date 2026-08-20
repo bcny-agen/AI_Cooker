@@ -19,7 +19,7 @@ describe('chat streaming errors', () => {
     await expect(chatApi.stream(
       { message: 'What can I cook?' },
       vi.fn(),
-    )).rejects.toThrow('The selected model is temporarily unavailable.')
+    )).rejects.toThrow('AI Cooker 无法开始生成回答。')
   })
 
   it('keeps a safe fallback for a non-JSON failure response', async () => {
@@ -31,6 +31,6 @@ describe('chat streaming errors', () => {
     await expect(chatApi.stream(
       { message: 'What can I cook?' },
       vi.fn(),
-    )).rejects.toThrow('AI Cooker could not start the response stream.')
+    )).rejects.toThrow('AI Cooker 无法开始生成回答。')
   })
 })

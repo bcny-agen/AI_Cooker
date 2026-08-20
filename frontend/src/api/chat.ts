@@ -14,10 +14,10 @@ function parseEvent(block: string): ChatStreamEvent | null {
   if (!event.type || ![
     'status', 'token', 'generated_image', 'image_error', 'done', 'error',
   ].includes(event.type)) {
-    throw new Error('AI Cooker returned an unsupported streaming event.')
+    throw new Error('AI Cooker 返回了不受支持的流式事件。')
   }
   if (!event.conversationId) {
-    throw new Error('AI Cooker returned a streaming event without a conversation ID.')
+    throw new Error('AI Cooker 返回的流式事件缺少对话编号。')
   }
   return event as ChatStreamEvent
 }
@@ -43,10 +43,10 @@ async function stream(
     notifyUnauthorized()
   }
   if (!response.ok) {
-    let message = 'AI Cooker could not start the response stream.'
+    let message = 'AI Cooker 无法开始生成回答。'
     try {
       const errorBody = await response.json() as { message?: unknown }
-      if (typeof errorBody.message === 'string' && errorBody.message.trim()) {
+      if (typeof errorBody.message === 'string' && /[\u3400-\u9fff]/.test(errorBody.message)) {
         message = errorBody.message
       }
     } catch {
@@ -55,7 +55,7 @@ async function stream(
     throw new Error(message)
   }
   if (!response.body) {
-    throw new Error('Streaming is not supported by this browser.')
+    throw new Error('当前浏览器不支持流式回答。')
   }
 
   const reader = response.body.getReader()
@@ -70,7 +70,11 @@ async function stream(
     if (event.type === 'done') terminal = true
     if (event.type === 'error') {
       terminal = true
-      throw new Error(event.message || 'AI Cooker could not complete the response.')
+      throw new Error(
+        event.message && /[\u3400-\u9fff]/.test(event.message)
+          ? event.message
+          : 'AI Cooker 未能完成回答。',
+      )
     }
   }
 
@@ -92,7 +96,7 @@ async function stream(
 
   if (buffer.trim()) consume(buffer)
   if (!terminal) {
-    throw new Error('AI Cooker ended the response stream unexpectedly.')
+    throw new Error('AI Cooker 的回答意外中断。')
   }
 }
 

@@ -8,13 +8,13 @@ import type { ChatMessage, ChatStreamStage, Conversation, ModelId, ModelInfo } f
 import { getApiErrorMessage } from '../utils/apiError'
 
 const STATUS_LABELS: Record<ChatStreamStage, string> = {
-  thinking: 'Thinking…',
-  analyzing_image: 'Analyzing your image…',
-  summarizing_context: 'Compressing older conversation context…',
-  searching_recipes: 'Searching recipes…',
-  generating_image: 'Generating dish image…',
-  generating_answer: 'Writing the answer…',
-  completed: 'Completed',
+  thinking: '正在思考…',
+  analyzing_image: '正在分析图片…',
+  summarizing_context: '正在整理较早的对话内容…',
+  searching_recipes: '正在搜索菜谱…',
+  generating_image: '正在生成菜品图片…',
+  generating_answer: '正在组织回答…',
+  completed: '已完成',
 }
 
 const DEFAULT_MODEL_ID: ModelId = 'STEP_FLASH_3_7'
@@ -47,7 +47,7 @@ export const useChatStore = defineStore('chat', () => {
         selectedModelId.value = availableModels.value.find((model) => model.available)?.id ?? DEFAULT_MODEL_ID
       }
     } catch (error) {
-      errorMessage.value = getApiErrorMessage(error, 'Could not load available AI models.')
+      errorMessage.value = getApiErrorMessage(error, '可用的 AI 模型加载失败。')
       throw error
     }
   }
@@ -58,7 +58,7 @@ export const useChatStore = defineStore('chat', () => {
     try {
       conversations.value = (await conversationsApi.list()).content
     } catch (error) {
-      errorMessage.value = getApiErrorMessage(error, 'Could not load conversations.')
+      errorMessage.value = getApiErrorMessage(error, '对话列表加载失败。')
       throw error
     } finally {
       isLoadingConversations.value = false
@@ -84,7 +84,7 @@ export const useChatStore = defineStore('chat', () => {
       }
     } catch (error) {
       if (requestSequence === messageRequestSequence) {
-        errorMessage.value = getApiErrorMessage(error, 'Could not load this conversation.')
+        errorMessage.value = getApiErrorMessage(error, '这段对话加载失败。')
       }
       throw error
     } finally {
@@ -106,7 +106,7 @@ export const useChatStore = defineStore('chat', () => {
   function updateModelNotice(): void {
     const model = selectedModel.value
     modelNotice.value = model && !model.supportsImages
-      ? `${model.displayName} supports text chat only; image upload is unavailable.`
+      ? `${model.displayName} 仅支持文字对话，无法上传图片。`
       : ''
   }
 
@@ -114,7 +114,7 @@ export const useChatStore = defineStore('chat', () => {
     if (isSending.value) return false
     const model = availableModels.value.find((item) => item.id === modelId)
     if (!model?.available) {
-      modelNotice.value = 'That model is not configured on the AI service.'
+      modelNotice.value = 'AI 服务尚未配置该模型。'
       return false
     }
 
@@ -123,7 +123,7 @@ export const useChatStore = defineStore('chat', () => {
         const updated = await conversationsApi.changeModel(activeConversationId.value, modelId)
         conversations.value = conversations.value.map((item) => item.id === updated.id ? updated : item)
       } catch (error) {
-        errorMessage.value = getApiErrorMessage(error, 'Could not change the conversation model.')
+        errorMessage.value = getApiErrorMessage(error, '切换对话模型失败。')
         return false
       }
     }
@@ -141,7 +141,7 @@ export const useChatStore = defineStore('chat', () => {
       conversations.value = conversations.value.map((item) => item.id === updated.id ? updated : item)
       return true
     } catch (error) {
-      errorMessage.value = getApiErrorMessage(error, 'Could not rename this conversation.')
+      errorMessage.value = getApiErrorMessage(error, '重命名对话失败。')
       return false
     }
   }
@@ -154,7 +154,7 @@ export const useChatStore = defineStore('chat', () => {
       if (activeConversationId.value === conversationId) startNewConversation()
       return true
     } catch (error) {
-      errorMessage.value = getApiErrorMessage(error, 'Could not delete this conversation.')
+      errorMessage.value = getApiErrorMessage(error, '删除对话失败。')
       return false
     }
   }
@@ -203,7 +203,7 @@ export const useChatStore = defineStore('chat', () => {
           resolvedConversationId = event.conversationId
           activeConversationId.value = event.conversationId
           if (event.type === 'status') {
-            streamStatus.value = event.message || (event.stage ? STATUS_LABELS[event.stage] : '')
+            streamStatus.value = event.stage ? STATUS_LABELS[event.stage] : event.message || ''
           } else if (event.type === 'token' && event.content) {
             messages.value = messages.value.map((item) =>
               item.id === assistantMessageId ? { ...item, content: item.content + event.content } : item,
@@ -232,7 +232,7 @@ export const useChatStore = defineStore('chat', () => {
         (item) => item.id === assistantMessageId,
       )?.imageGenerationFailed === true
       if (resolvedConversationId && !(await refreshAfterStream(resolvedConversationId))) {
-        errorMessage.value = 'Your answer was saved, but part of the history could not refresh.'
+        errorMessage.value = '回答已保存，但部分历史记录暂时无法刷新。'
       }
       if (imageFailure) {
         const lastAssistant = [...messages.value].reverse().find(
@@ -255,7 +255,7 @@ export const useChatStore = defineStore('chat', () => {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
         errorMessage.value = getApiErrorMessage(
           error,
-          'AI Cooker could not answer. Please try again.',
+          'AI Cooker 暂时无法回答，请重试。',
         )
       }
       return false

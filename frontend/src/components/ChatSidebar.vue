@@ -76,9 +76,9 @@ function formatDate(value: string): string {
   const date = new Date(value)
   const today = new Date()
   if (date.toDateString() === today.toDateString()) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   }
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
 }
 </script>
 
@@ -87,27 +87,27 @@ function formatDate(value: string): string {
   <aside class="sidebar" :class="{ 'sidebar--open': open }">
     <div class="sidebar__top">
       <AppLogo compact />
-      <button class="icon-button sidebar__close" type="button" aria-label="Close menu" @click="emit('close')">
+      <button class="icon-button sidebar__close" type="button" aria-label="关闭菜单" @click="emit('close')">
         <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
       </button>
     </div>
 
-    <nav class="sidebar-nav" aria-label="Main navigation">
-      <RouterLink to="/chat">Chat</RouterLink>
-      <RouterLink to="/forum">Forum</RouterLink>
-      <RouterLink to="/settings/memory">Memory</RouterLink>
+    <nav class="sidebar-nav" aria-label="主导航">
+      <RouterLink to="/chat">对话</RouterLink>
+      <RouterLink to="/forum">社区</RouterLink>
+      <RouterLink to="/settings/memory">记忆</RouterLink>
     </nav>
 
     <button class="new-chat-button" type="button" :disabled="busy" @click="emit('newConversation')">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-      New conversation
+      新建对话
     </button>
 
-    <div class="sidebar__label">Conversations</div>
+    <div class="sidebar__label">对话记录</div>
     <div class="conversation-list" aria-live="polite">
-      <div v-if="loading" class="sidebar-state">Loading conversations…</div>
+      <div v-if="loading" class="sidebar-state">正在加载对话…</div>
       <div v-else-if="conversations.length === 0" class="sidebar-state">
-        Your recipe conversations will appear here.
+        你的菜谱对话会显示在这里。
       </div>
       <template v-else>
         <div
@@ -129,7 +129,7 @@ function formatDate(value: string): string {
             class="conversation-actions-button"
             type="button"
             :disabled="busy"
-            :aria-label="`Actions for ${conversation.title}`"
+            :aria-label="`${conversation.title} 的操作菜单`"
             :aria-expanded="openMenuId === conversation.id"
             @click.stop="toggleMenu(conversation.id)"
           >
@@ -145,8 +145,8 @@ function formatDate(value: string): string {
             role="menu"
             @click.stop
           >
-            <button type="button" role="menuitem" @click="openRename(conversation)">Rename</button>
-            <button class="conversation-actions-menu__danger" type="button" role="menuitem" @click="openDelete(conversation)">Delete</button>
+            <button type="button" role="menuitem" @click="openRename(conversation)">重命名</button>
+            <button class="conversation-actions-menu__danger" type="button" role="menuitem" @click="openDelete(conversation)">删除</button>
           </div>
         </div>
       </template>
@@ -156,7 +156,7 @@ function formatDate(value: string): string {
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10" />
       </svg>
-      Log out
+      退出登录
     </button>
   </aside>
 
@@ -169,11 +169,11 @@ function formatDate(value: string): string {
       @keydown.esc="closeRename"
     >
       <section class="conversation-dialog" role="dialog" aria-modal="true" aria-labelledby="rename-conversation-title">
-        <span class="eyebrow">Conversation</span>
-        <h2 id="rename-conversation-title">Rename conversation</h2>
-        <p>Choose a short title that will be easy to find later.</p>
+        <span class="eyebrow">对话</span>
+        <h2 id="rename-conversation-title">重命名对话</h2>
+        <p>填写一个简短、方便以后查找的标题。</p>
         <label class="conversation-dialog__field">
-          <span>Title</span>
+          <span>标题</span>
           <input
             ref="renameInput"
             v-model="titleDraft"
@@ -184,8 +184,8 @@ function formatDate(value: string): string {
           >
         </label>
         <div class="conversation-dialog__actions">
-          <button class="dialog-button dialog-button--secondary" type="button" @click="closeRename">Cancel</button>
-          <button class="dialog-button dialog-button--primary" type="button" :disabled="!titleDraft.trim() || busy" @click="submitRename">Save</button>
+          <button class="dialog-button dialog-button--secondary" type="button" @click="closeRename">取消</button>
+          <button class="dialog-button dialog-button--primary" type="button" :disabled="!titleDraft.trim() || busy" @click="submitRename">保存</button>
         </div>
       </section>
     </div>
@@ -198,15 +198,15 @@ function formatDate(value: string): string {
       @keydown.esc="closeDelete"
     >
       <section class="conversation-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-conversation-title">
-        <span class="eyebrow eyebrow--danger">Permanent action</span>
-        <h2 id="delete-conversation-title">Delete conversation?</h2>
+        <span class="eyebrow eyebrow--danger">永久操作</span>
+        <h2 id="delete-conversation-title">删除这段对话？</h2>
         <p>
-          “{{ deleteTarget.title }}” and its visible message history will be permanently deleted.
-          Published forum posts and uploaded images will remain.
+          “{{ deleteTarget.title }}”及其可见消息记录将被永久删除。
+          已发布的社区帖子和上传过的图片会保留。
         </p>
         <div class="conversation-dialog__actions">
-          <button class="dialog-button dialog-button--secondary" type="button" @click="closeDelete">Cancel</button>
-          <button class="dialog-button dialog-button--danger" type="button" :disabled="busy" @click="confirmDelete">Delete permanently</button>
+          <button class="dialog-button dialog-button--secondary" type="button" @click="closeDelete">取消</button>
+          <button class="dialog-button dialog-button--danger" type="button" :disabled="busy" @click="confirmDelete">永久删除</button>
         </div>
       </section>
     </div>

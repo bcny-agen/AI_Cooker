@@ -38,16 +38,16 @@ afterEach(() => {
 describe('ChatSidebar conversation management', () => {
   it('opens the actions menu without selecting the conversation', async () => {
     const wrapper = mountSidebar()
-    await wrapper.get(`[aria-label="Actions for ${conversation.title}"]`).trigger('click')
+    await wrapper.get(`[aria-label="${conversation.title} 的操作菜单"]`).trigger('click')
 
     expect(wrapper.emitted('select')).toBeUndefined()
-    expect(wrapper.get('[role="menu"]').text()).toContain('Rename')
-    expect(wrapper.get('[role="menu"]').text()).toContain('Delete')
+    expect(wrapper.get('[role="menu"]').text()).toContain('重命名')
+    expect(wrapper.get('[role="menu"]').text()).toContain('删除')
   })
 
   it('prefills rename, submits on Enter, and preserves the conversation id', async () => {
     const wrapper = mountSidebar()
-    await wrapper.get(`[aria-label="Actions for ${conversation.title}"]`).trigger('click')
+    await wrapper.get(`[aria-label="${conversation.title} 的操作菜单"]`).trigger('click')
     await wrapper.get('[role="menuitem"]').trigger('click')
     const input = document.body.querySelector<HTMLInputElement>('.conversation-dialog__field input')
 
@@ -63,7 +63,7 @@ describe('ChatSidebar conversation management', () => {
 
   it('cancels rename on Escape without emitting a change', async () => {
     const wrapper = mountSidebar()
-    await wrapper.get(`[aria-label="Actions for ${conversation.title}"]`).trigger('click')
+    await wrapper.get(`[aria-label="${conversation.title} 的操作菜单"]`).trigger('click')
     await wrapper.get('[role="menuitem"]').trigger('click')
     const backdrop = document.body.querySelector<HTMLElement>('.conversation-dialog-backdrop')
     backdrop?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
@@ -75,14 +75,14 @@ describe('ChatSidebar conversation management', () => {
 
   it('requires explicit confirmation before emitting delete', async () => {
     const wrapper = mountSidebar()
-    await wrapper.get(`[aria-label="Actions for ${conversation.title}"]`).trigger('click')
+    await wrapper.get(`[aria-label="${conversation.title} 的操作菜单"]`).trigger('click')
     await wrapper.findAll('[role="menuitem"]')[1]!.trigger('click')
 
     expect(wrapper.emitted('delete')).toBeUndefined()
     const dialog = document.body.querySelector<HTMLElement>('[role="alertdialog"]')
-    expect(dialog?.textContent).toContain('Published forum posts and uploaded images will remain')
+    expect(dialog?.textContent).toContain('已发布的社区帖子和上传过的图片会保留')
     const confirm = [...(dialog?.querySelectorAll('button') ?? [])]
-      .find((button) => button.textContent?.includes('Delete permanently'))
+      .find((button) => button.textContent?.includes('永久删除'))
     confirm?.click()
     await wrapper.vm.$nextTick()
 

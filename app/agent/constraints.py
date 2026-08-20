@@ -176,6 +176,43 @@ _EXPLICIT_WEB_MARKERS = (
     "latest", "current", "trending", "viral", "web source", "online source",
 )
 
+_RECIPE_REQUEST_MARKERS = (
+    "推荐", "食谱", "晚饭", "晚餐", "早餐", "午餐", "吃什么",
+    "怎么做", "能一起做", "recipe", "dinner", "breakfast",
+    "lunch", "dish", "dishes", "what to eat", "what can i cook",
+)
+
+_PREFERENCE_DISCLOSURE_MARKERS = (
+    "平时", "通常", "喜欢", "偏好", "习惯", "记住", "长期记忆",
+    "总结", "只确认", "过敏", "忌口", "prefer", "usually", "remember",
+)
+
+_RECIPE_REQUEST_DENIAL = re.compile(
+    r"(?:不需要|不用|不要)\s*(?:给我)?\s*(?:推荐|生成)?\s*(?:菜谱|食谱|推荐菜)"
+)
+
+
+def _has_explicit_recipe_request(text: str) -> bool:
+    """Recognize a recipe ask without treating a preference denial as intent."""
+
+    folded = _RECIPE_REQUEST_DENIAL.sub("", text.casefold())
+    if any(marker in folded for marker in _RECIPE_REQUEST_MARKERS):
+        return True
+    if "做法" not in folded:
+        return False
+    return not re.search(
+        r"(?:喜欢|偏好|希望|习惯|要求).{0,16}做法",
+        folded,
+    )
+
+
+def _is_preference_disclosure(text: str) -> bool:
+    folded = text.casefold()
+    return (
+        not _has_explicit_recipe_request(folded)
+        and any(marker in folded for marker in _PREFERENCE_DISCLOSURE_MARKERS)
+    )
+
 
 @dataclass(frozen=True, slots=True)
 class RecipeConstraints:
@@ -337,14 +374,9 @@ def extract_recipe_constraints(
     max_minutes: int | None = None
     max_difficulty: int | None = None
     servings: int | None = None
-    recommendation_markers = (
-        "推荐", "食谱", "晚饭", "晚餐", "早餐", "午餐", "吃什么",
-        "怎么做", "做法", "能一起做", "recipe", "dinner", "breakfast",
-        "lunch", "dish", "dishes", "what to eat", "what can i cook",
-    )
     latest_human = human_texts[-1].casefold() if human_texts else ""
     should_search_recipe = (
-        any(marker in latest_human for marker in recommendation_markers)
+        _has_explicit_recipe_request(latest_human)
         and not any(marker in latest_human for marker in _EXPLICIT_WEB_MARKERS)
     )
 
@@ -516,13 +548,27 @@ def extract_recipe_constraints(
         _canonical_ingredient(value, catalog).casefold() not in latest_negative_keys
         for value in latest_mentions
     )
-    latest_updates_boundary = len(human_texts) > 1 and any(
-        marker in latest_human
-        for marker in (
-            "记得", "不要", "不吃", "过敏", "没有", "少油", "低油",
-            "少放油", "少放点油",
-            "不辣", "分钟", "份量", "个人", "remember", "avoid",
-            "allergic", "without", "servings", "less oil", "non-spicy",
+    prior_recipe_context = any(
+        isinstance(message, ToolMessage)
+        and message.name in {"recipe_search", "web_search"}
+        for message in messages
+    ) or any(
+        _has_explicit_recipe_request(text)
+        for text in human_texts[:-1]
+    )
+    preference_disclosure = _is_preference_disclosure(latest_human)
+    latest_updates_boundary = (
+        len(human_texts) > 1
+        and prior_recipe_context
+        and not preference_disclosure
+        and any(
+            marker in latest_human
+            for marker in (
+                "记得", "不要", "不吃", "过敏", "没有", "少油", "低油",
+                "少放油", "少放点油",
+                "不辣", "分钟", "份量", "个人", "remember", "avoid",
+                "allergic", "without", "servings", "less oil", "non-spicy",
+            )
         )
     )
     # A constraint-only first turn such as "我不吃辣" remains a clarification
@@ -530,7 +576,10 @@ def extract_recipe_constraints(
     # can update the active boundary without repeating "recipe".
     if (
         not any(marker in latest_human for marker in _EXPLICIT_WEB_MARKERS)
-        and (latest_has_available or latest_updates_boundary)
+        and (
+            (latest_has_available and not preference_disclosure)
+            or latest_updates_boundary
+        )
     ):
         should_search_recipe = True
     return RecipeConstraints(

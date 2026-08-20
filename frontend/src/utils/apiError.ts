@@ -4,7 +4,8 @@ import type { ApiErrorResponse } from '../types/api'
 
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
-    return error.response?.data?.message || fallback
+    const message = error.response?.data?.message
+    return message && /[\u3400-\u9fff]/.test(message) ? message : fallback
   }
-  return error instanceof Error && error.message ? error.message : fallback
+  return error instanceof Error && /[\u3400-\u9fff]/.test(error.message) ? error.message : fallback
 }

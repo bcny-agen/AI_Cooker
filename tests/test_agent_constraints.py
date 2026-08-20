@@ -150,6 +150,45 @@ def test_constraint_only_first_turn_remains_a_clarification_case():
     assert constraints.should_search_recipe is False
 
 
+def test_multi_turn_preference_disclosure_does_not_start_recipe_search():
+    constraints = extract_recipe_constraints([
+        HumanMessage(content="我对花生过敏，先聊聊我的饮食习惯。"),
+        HumanMessage(content=(
+            "我平时通常只用电饭锅和炒锅，家里没有烤箱，"
+            "而且更喜欢十五分钟左右能完成的快手菜。"
+        )),
+    ])
+
+    assert constraints.should_search_recipe is False
+    assert constraints.equipment == ("RICE_COOKER", "WOK")
+    assert "OVEN" in constraints.unavailable_equipment
+
+
+def test_negative_recipe_request_and_preference_wording_are_not_recipe_intent():
+    no_recommendation = extract_recipe_constraints([
+        HumanMessage(content="我偏爱家常中餐，不需要推荐菜。"),
+    ])
+    simple_method = extract_recipe_constraints([
+        HumanMessage(content="我更喜欢步骤简单、容易操作的做法。"),
+    ])
+    direct_method_request = extract_recipe_constraints([
+        HumanMessage(content="番茄炒蛋的做法"),
+    ])
+
+    assert no_recommendation.should_search_recipe is False
+    assert simple_method.should_search_recipe is False
+    assert direct_method_request.should_search_recipe is True
+
+
+def test_constraint_update_continues_an_existing_recipe_search():
+    constraints = extract_recipe_constraints([
+        HumanMessage(content="推荐一个晚饭食谱。"),
+        HumanMessage(content="记得少油，而且我没有烤箱。"),
+    ])
+
+    assert constraints.should_search_recipe is True
+
+
 def test_force_recipe_search_can_be_disabled_for_incompatible_model():
     middleware = DeterministicConstraintMiddleware(force_recipe_search=False)
     request = ModelRequest(

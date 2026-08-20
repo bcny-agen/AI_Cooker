@@ -16,7 +16,7 @@ const deleting = ref(false)
 const errorMessage = ref('')
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })
+  return new Date(value).toLocaleString('zh-CN', { dateStyle: 'long', timeStyle: 'short' })
 }
 
 async function load(): Promise<void> {
@@ -26,21 +26,21 @@ async function load(): Promise<void> {
   try {
     post.value = await forumApi.get(String(route.params.postId))
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'This forum post could not be loaded.')
+    errorMessage.value = getApiErrorMessage(error, '这篇社区帖子加载失败。')
   } finally {
     loading.value = false
   }
 }
 
 async function remove(): Promise<void> {
-  if (!post.value || !window.confirm('Delete this forum post? This cannot be undone.')) return
+  if (!post.value || !window.confirm('确定删除这篇社区帖子吗？删除后无法恢复。')) return
   deleting.value = true
   errorMessage.value = ''
   try {
     await forumApi.remove(post.value.id)
     await router.replace('/forum/mine')
   } catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'The post could not be deleted.')
+    errorMessage.value = getApiErrorMessage(error, '帖子删除失败。')
   } finally {
     deleting.value = false
   }
@@ -54,8 +54,8 @@ onMounted(load)
   <main class="forum-shell">
     <ForumHeader />
     <article class="forum-detail">
-      <RouterLink class="back-link" to="/forum">← Back to forum</RouterLink>
-      <div v-if="loading" class="forum-state"><span class="spinner" /> Loading post…</div>
+      <RouterLink class="back-link" to="/forum">← 返回社区</RouterLink>
+      <div v-if="loading" class="forum-state"><span class="spinner" /> 正在加载帖子…</div>
       <div v-else-if="errorMessage && !post" class="notice notice--error" role="alert">{{ errorMessage }}</div>
       <template v-else-if="post">
         <ForumImage
@@ -66,17 +66,17 @@ onMounted(load)
           :alt="post.title"
         />
         <div class="forum-detail__content">
-          <span class="eyebrow">Shared dish</span>
+          <span class="eyebrow">社区菜品</span>
           <h1>{{ post.title }}</h1>
           <div class="forum-detail__meta">
-            <span>By @{{ post.author.username }}</span>
+            <span>作者：@{{ post.author.username }}</span>
             <time :datetime="post.createdAt">{{ formatDate(post.createdAt) }}</time>
           </div>
           <p class="forum-detail__text">{{ post.content }}</p>
           <div v-if="post.isOwner" class="forum-owner-actions">
-            <RouterLink class="secondary-button" :to="`/forum/${post.id}/edit`">Edit post</RouterLink>
+            <RouterLink class="secondary-button" :to="`/forum/${post.id}/edit`">编辑帖子</RouterLink>
             <button class="danger-button" type="button" :disabled="deleting" @click="remove">
-              {{ deleting ? 'Deleting…' : 'Delete post' }}
+              {{ deleting ? '正在删除…' : '删除帖子' }}
             </button>
           </div>
           <div v-if="errorMessage" class="notice notice--error" role="alert">{{ errorMessage }}</div>
