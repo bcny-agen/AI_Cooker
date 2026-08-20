@@ -2,6 +2,26 @@
 
 AI Cooker 是一个面向家庭烹饪场景的全栈智能助手。项目将多轮 Agent、约束感知的 Recipe RAG、图片上传、社区论坛和长期偏好记忆整合到一套应用中，帮助用户根据现有食材、忌口、过敏原、厨具和口味偏好获得更贴合实际条件的烹饪建议。
 
+## 界面预览
+
+### 智能烹饪对话
+
+支持模型切换、流式回答、图片输入、对话历史，以及面向家庭烹饪场景的快捷提问。
+
+![AI Cooker 智能烹饪对话界面](docs/screenshots/chat-overview.png)
+
+### 菜品社区
+
+用户可以把对话中的菜谱与生成图片整理成帖子，分享实际烹饪成果。
+
+![AI Cooker 菜品社区界面](docs/screenshots/forum-overview.png)
+
+### 长期偏好记忆
+
+跨对话保存饮食限制、食材喜好、菜系偏好、烹饪习惯和厨具条件，并允许用户查看、修改或删除。
+
+![AI Cooker 长期偏好记忆界面](docs/screenshots/memory-overview.png)
+
 ## 主要能力
 
 - 基于 FastAPI 与 LangGraph 的流式对话 Agent
